@@ -14,11 +14,17 @@ mkdir -p "$SERVICES_DIR"
 rm -rf "$SERVICES_DIR/$WORKFLOW_NAME"
 cp -R "$SRC_DIR/$WORKFLOW_NAME" "$SERVICES_DIR/$WORKFLOW_NAME"
 
-# Re-register services without needing to log out
+# Re-register services
 /System/Library/CoreServices/pbs -update 2>/dev/null || true
-killall cfprefsd 2>/dev/null || true
+
+# macOS marks new services NSRestricted=1 (hidden) by default; explicitly enable it
+defaults write pbs NSServicesStatus -dict-add \
+  '"(null) - Convert FLAC to M4A - runWorkflowAsService"' \
+  '{enabled_context_menu = 1; enabled_services_menu = 1; presentation_modes = {NSApplication = 0; NSContextMenu = 1;};}'
+
+# Relaunch Finder to pick up the change
+killall Finder 2>/dev/null || true
 
 echo "Installed: $SERVICES_DIR/$WORKFLOW_NAME"
 echo ""
 echo "In Finder: right-click any folder → Services → Convert FLAC to M4A"
-echo "If the item doesn't appear yet, log out and back in (or restart Finder)."
