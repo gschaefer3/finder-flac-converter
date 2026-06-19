@@ -19,35 +19,54 @@ brew install ffmpeg
 
 ## Installation
 
-**Option 1 — Install script (recommended)**
-
 ```bash
 git clone https://github.com/gschaefer3/finder-flac-converter.git
 cd finder-flac-converter
 ./install.sh
 ```
 
-**Option 2 — Manual**
+The script:
+1. Copies the workflow to `~/Library/Services/`
+2. Explicitly enables it in macOS (see note below)
+3. Relaunches Finder so the menu item appears immediately
 
-Double-click `Convert FLAC to M4A.workflow` in Finder. macOS will prompt you to install it.
+After installing, right-click any folder in Finder and look under **Services → Convert FLAC to M4A**.
 
----
+> **Manual install:** You can also double-click `Convert FLAC to M4A.workflow` in Finder, but you will still need to enable it manually in System Settings (see Troubleshooting below).
 
-After installing, the item appears under **right-click → Services** (or **right-click → Quick Actions** depending on your macOS version). If it doesn't appear immediately, log out and back in to let macOS re-register the service.
+## Troubleshooting
 
-## Enabling the menu item
+### The menu item doesn't appear
 
-If the item is installed but not visible in the right-click menu:
+macOS silently marks all newly installed third-party services as restricted (hidden) by default — this is intentional Apple behavior to prevent the Services menu from getting cluttered. The `install.sh` script handles this automatically, but if you installed manually, enable it yourself:
 
-1. Open **System Settings → Privacy & Security → Extensions → Finder Extensions**
-2. Make sure **Convert FLAC to M4A** is checked
+**Option A — System Settings:**
 
-You can also manage it under **System Settings → Keyboard → Keyboard Shortcuts → Services**.
+1. Open **System Settings → Keyboard → Keyboard Shortcuts → Services**
+2. Find **Convert FLAC to M4A** under Files and Folders and check the box
+
+**Option B — Terminal:**
+
+```bash
+defaults write pbs NSServicesStatus -dict-add \
+  '"(null) - Convert FLAC to M4A - runWorkflowAsService"' \
+  '{enabled_context_menu = 1; enabled_services_menu = 1; presentation_modes = {NSApplication = 0; NSContextMenu = 1;};}'
+killall Finder
+```
+
+### ffmpeg not found
+
+Automator doesn't inherit your shell's PATH. The workflow explicitly adds `/opt/homebrew/bin` and `/usr/local/bin`, which covers standard Homebrew install locations. If ffmpeg is installed elsewhere, install it via Homebrew:
+
+```bash
+brew install ffmpeg
+```
 
 ## Uninstall
 
 ```bash
 rm -rf ~/Library/Services/"Convert FLAC to M4A.workflow"
+killall Finder
 ```
 
 ## License
